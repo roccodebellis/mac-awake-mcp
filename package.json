@@ -1,0 +1,73 @@
+{
+  "name": "@roccodebellis/mac-awake-mcp",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Model Context Protocol (MCP) server that lets AI assistants keep macOS awake while they work and grab your attention when they need you — wraps the native `caffeinate` and `osascript`, no third-party app (works under MDM).",
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "claude",
+    "caffeinate",
+    "keep-awake",
+    "prevent-sleep",
+    "no-sleep",
+    "presentation",
+    "notification",
+    "osascript",
+    "macos",
+    "ai"
+  ],
+  "homepage": "https://github.com/roccodebellis/mac-awake-mcp#readme",
+  "bugs": {
+    "url": "https://github.com/roccodebellis/mac-awake-mcp/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/roccodebellis/mac-awake-mcp.git"
+  },
+  "license": "MIT",
+  "author": {
+    "name": "Rocco De Bellis",
+    "url": "https://github.com/roccodebellis"
+  },
+  "type": "module",
+  "bin": {
+    "mac-awake-mcp": "dist/index.js"
+  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "assets",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "os": [
+    "darwin"
+  ],
+  "scripts": {
+    "build": "tsc && chmod +x dist/index.js",
+    "dev": "tsc --watch",
+    "start": "node dist/index.js",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "prepare": "npm run build",
+    "prepublishOnly": "npm run typecheck && npm run test"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "prettier": "^3.8.3",
+    "typescript": "^6.0.0",
+    "vitest": "^4.1.8"
+  }
+}
