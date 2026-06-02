@@ -9,4 +9,23 @@ describe("buildHooks", () => {
     expect(json).toContain("on-notification");
     expect(json).toContain("on-stop");
   });
+
+  it("invokes node by absolute path so hooks survive a minimal PATH", () => {
+    const json = JSON.stringify(
+      buildHooks("/opt/mac-awake/index.js", 900, "/abs/node"),
+    );
+    // The command must start with the absolute node path, never bare `node `.
+    expect(json).toContain('"/abs/node\\" \\"/opt/mac-awake/index.js\\"');
+    expect(json).not.toContain('"node ');
+  });
+
+  it("defaults to an absolute node path (process.execPath)", () => {
+    const hooks = buildHooks("/opt/mac-awake/index.js", 900) as {
+      hooks: { UserPromptSubmit: { hooks: { command: string }[] }[] };
+    };
+    const command = hooks.hooks.UserPromptSubmit[0]!.hooks[0]!.command;
+    // Quoted absolute path (handles spaces), never bare `node `.
+    expect(command.startsWith('"/')).toBe(true);
+    expect(command.startsWith("node ")).toBe(false);
+  });
 });

@@ -21,9 +21,18 @@ interface CommandHook {
 export function buildHooks(
   bin: string,
   ttlSeconds: number,
+  nodeBin: string = process.execPath,
 ): Record<string, unknown> {
+  // Hooks run with whatever environment Claude Code was launched in, which may
+  // lack nvm/Homebrew on PATH. Invoke node by absolute path so the hook never
+  // silently no-ops because `node` could not be resolved.
   const cmd = (sub: string): { hooks: CommandHook[] } => ({
-    hooks: [{ type: "command", command: `node ${JSON.stringify(bin)} ${sub}` }],
+    hooks: [
+      {
+        type: "command",
+        command: `${JSON.stringify(nodeBin)} ${JSON.stringify(bin)} ${sub}`,
+      },
+    ],
   });
   return {
     hooks: {
@@ -40,8 +49,9 @@ const DEFAULT_TTL_SECONDS = 900;
 /** Human-readable setup instructions printed by the `setup` subcommand. */
 export function setupText(): string {
   const bin = binPath();
+  const node = process.execPath;
   const hooksJson = JSON.stringify(
-    buildHooks(bin, DEFAULT_TTL_SECONDS),
+    buildHooks(bin, DEFAULT_TTL_SECONDS, node),
     null,
     2,
   );
@@ -50,7 +60,7 @@ export function setupText(): string {
 1) Register the MCP server with Claude Code (exposes stay_awake / let_sleep /
    awake_status / notify / flash as tools Claude can call on demand):
 
-   claude mcp add mac-awake -- node ${JSON.stringify(bin)} serve
+   claude mcp add mac-awake -- ${JSON.stringify(node)} ${JSON.stringify(bin)} serve
 
    (or, once published:  claude mcp add mac-awake -- npx -y @roccodebellis/mac-awake-mcp)
 
