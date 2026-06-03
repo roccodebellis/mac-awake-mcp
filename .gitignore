@@ -1,0 +1,13 @@
+node_modules/
+dist/
+coverage/
+*.log
+*.tsbuildinfo
+SHA256SUMS.txt
+.DS_Store
+.env
+.env.*
+.vitest/
+
+# Internal planning — not for the public repo
+MARKETING.md
