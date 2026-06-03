@@ -14,6 +14,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   decision doesn't sit there silently. The banner names the blocked tool
   (e.g. "Approval needed: Bash"). Permission _prompts_ were already covered by the
   `Notification` hook. `AskUserQuestion` has no hook event, so it can't be caught.
+- npm distribution: run it straight from npm with
+  `npx -y @roccodebellis/mac-awake-mcp`. Releases are automated by a tag-triggered
+  workflow that builds, tests, and publishes with Sigstore provenance.
+
+### Changed
+
+- Dropped the `"os": ["darwin"]` package gate (it broke cross-platform `npm`
+  installs and lockfile audits) in favour of a `postinstall` notice. The package
+  now installs everywhere and simply warns when it isn't running on macOS.
 
 ## [0.1.0] - 2026-06-03
 

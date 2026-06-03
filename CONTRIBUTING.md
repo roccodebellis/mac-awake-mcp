@@ -96,9 +96,16 @@ history, and the topic branch is **deleted automatically** afterward.
 
 ## Releasing (maintainers)
 
+One-time setup: add an `NPM_TOKEN` repository secret — an npm **automation**
+token with publish rights for the `@roccodebellis` scope.
+
 1. Update `CHANGELOG.md` (move `Unreleased` into a dated version) and bump
    `version` in `package.json`. It is kept in sync with `SERVER_VERSION`
    (asserted by `test/version.test.ts`).
-2. Tag the release `vX.Y.Z` and push the tag.
-3. Generate artifact checksums with `npm run checksums` and attach the
-   resulting `SHA256SUMS.txt` to the GitHub Release.
+2. Tag and push: `npm version <patch|minor|major>` bumps + commits + tags, then
+   `git push --follow-tags`. Pushing a `v*` tag triggers
+   [`release.yml`](.github/workflows/release.yml), which builds, tests, and runs
+   `npm publish --provenance` (Sigstore-attested), then cuts the GitHub Release
+   with auto-generated notes.
+3. Optionally attach artifact checksums: run `npm run checksums` and upload the
+   resulting `SHA256SUMS.txt` to the Release.
