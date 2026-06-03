@@ -34,6 +34,7 @@ jobs:
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version-file: .nvmrc
-          cache: npm
-      - run: npm ci --ignore-scripts
+      # `npm audit` reads package-lock.json directly — no install needed. Skipping the
+      # install also avoids EBADPLATFORM: this package declares `"os": ["darwin"]`, which
+      # `npm ci` refuses to honour on the ubuntu runner.
       - run: npm audit --audit-level=high
