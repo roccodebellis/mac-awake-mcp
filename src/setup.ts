@@ -16,6 +16,8 @@ interface CommandHook {
  * session lifecycle:
  *  - prompt submitted / about to use a tool  -> keep the Mac awake (refreshed)
  *  - Claude needs the user (Notification)     -> flash + let it sleep again
+ *  - auto-mode classifier blocks an action    -> flash + let it sleep again
+ *    (PermissionDenied; fires only in auto permission mode)
  *  - Claude finished (Stop)                   -> notify "done" + let it sleep
  */
 export function buildHooks(
@@ -39,6 +41,7 @@ export function buildHooks(
       UserPromptSubmit: [cmd(`keep-awake --ttl ${ttlSeconds}`)],
       PreToolUse: [cmd(`keep-awake --ttl ${ttlSeconds}`)],
       Notification: [cmd("on-notification")],
+      PermissionDenied: [cmd("on-notification")],
       Stop: [cmd("on-stop")],
     },
   };

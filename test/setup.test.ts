@@ -10,6 +10,14 @@ describe("buildHooks", () => {
     expect(json).toContain("on-stop");
   });
 
+  it("wires PermissionDenied so auto-mode blocks alert the user", () => {
+    const hooks = buildHooks("/opt/mac-awake/index.js", 900) as {
+      hooks: { PermissionDenied?: { hooks: { command: string }[] }[] };
+    };
+    const command = hooks.hooks.PermissionDenied?.[0]?.hooks[0]?.command;
+    expect(command).toContain("on-notification");
+  });
+
   it("invokes node by absolute path so hooks survive a minimal PATH", () => {
     const json = JSON.stringify(buildHooks("/opt/mac-awake/index.js", 900, "/abs/node"));
     // The command must start with the absolute node path, never bare `node `.

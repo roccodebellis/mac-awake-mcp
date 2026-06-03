@@ -98,6 +98,16 @@ fail silently.)
         ]
       }
     ],
+    "PermissionDenied": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node /abs/dist/index.js on-notification"
+          }
+        ]
+      }
+    ],
     "Stop": [
       {
         "hooks": [{ "type": "command", "command": "node /abs/dist/index.js on-stop" }]
@@ -113,13 +123,22 @@ Behaviour:
   rolling `--ttl` (default 900s). If Claude goes idle for longer than the TTL, the assertion
   lapses and the Mac can lock again.
 - **When Claude needs you** (`Notification`) → flash the screen and post Claude's own message
-  as a banner, then release keep-awake so the Mac can lock while it waits for you.
+  as a banner, then release keep-awake so the Mac can lock while it waits for you. This already
+  covers permission _prompts_: an approval dialog is sent as a `Notification`.
+- **When the auto-mode classifier blocks an action** (`PermissionDenied`, auto permission mode
+  only) → same flash + banner (e.g. _"Approval needed: Bash"_), so an action that was denied
+  and now needs your decision doesn't sit there silently. Then release.
 - **When Claude finishes** (`Stop`) → post a "finished" banner, then release.
 
-The Notification and Stop banners are **session-aware**: they read the project from the hook
-payload's `cwd` and put it in the title (e.g. **"Claude · P001"**), so when several Claude
-sessions run at once you can tell which one is calling. Sub-agent notifications add a
-`subagent: …` subtitle, and the Notification banner carries Claude's original message.
+These banners are **session-aware**: they read the project from the hook payload's `cwd` and
+put it in the title (e.g. **"Claude · P001"**), so when several Claude sessions run at once you
+can tell which one is calling. Sub-agent notifications add a `subagent: …` subtitle, the
+Notification banner carries Claude's original message, and a `PermissionDenied` banner names
+the blocked tool.
+
+> **Note — what _can't_ be caught.** `AskUserQuestion` (when Claude asks you a multiple-choice
+> question) is a normal tool call with no dedicated hook event, so it can't trigger its own
+> banner. Permission _prompts_ and auto-mode _denials_ are covered by the two hooks above.
 
 ## CLI
 

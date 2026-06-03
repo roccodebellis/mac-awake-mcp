@@ -78,4 +78,29 @@ describe("attentionNotification", () => {
   it("defaults the message when none is provided", () => {
     expect(attentionNotification({}).message).toBe("Needs your attention.");
   });
+
+  it("phrases a PermissionDenied event from the tool name", () => {
+    const n = attentionNotification({
+      cwd: "/Users/x/Repository/P001",
+      hook_event_name: "PermissionDenied",
+      tool_name: "Bash",
+    });
+    expect(n.title).toBe("Claude · P001");
+    expect(n.message).toBe("Approval needed: Bash");
+  });
+
+  it("phrases a permission event without a tool name", () => {
+    expect(attentionNotification({ hook_event_name: "PermissionDenied" }).message).toBe(
+      "Approval needed.",
+    );
+  });
+
+  it("prefers an explicit message over the permission fallback", () => {
+    const n = attentionNotification({
+      hook_event_name: "PermissionDenied",
+      tool_name: "Bash",
+      message: "Custom text",
+    });
+    expect(n.message).toBe("Custom text");
+  });
 });

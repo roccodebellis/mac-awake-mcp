@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Alert on the `PermissionDenied` hook (auto permission mode): when the auto-mode
+  classifier blocks a tool call, flash + banner so an action that now needs your
+  decision doesn't sit there silently. The banner names the blocked tool
+  (e.g. "Approval needed: Bash"). Permission _prompts_ were already covered by the
+  `Notification` hook. `AskUserQuestion` has no hook event, so it can't be caught.
+
 ## [0.1.0] - 2026-06-03
 
 Initial public release.

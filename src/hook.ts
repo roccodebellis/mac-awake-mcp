@@ -16,6 +16,8 @@ export interface HookPayload {
   /** Human-readable text (Notification event only). */
   readonly message?: string;
   readonly notification_type?: string;
+  /** Tool that triggered a PermissionRequest / PermissionDenied event, when present. */
+  readonly tool_name?: string;
   /** Present when a subagent triggered the event. */
   readonly agent_type?: string;
 }
@@ -65,14 +67,35 @@ export function stopNotification(payload: HookPayload): NotifyOptions {
 }
 
 /**
- * Banner for the Notification event ("Claude needs you"), carrying Claude's own
- * message plus which project it came from. Silent on purpose: the flash and any
- * user-configured sound hook already cover the audible side.
+ * Best human-readable line for an "attention" banner. Notification events carry
+ * Claude's own `message`; permission events (PermissionRequest / PermissionDenied)
+ * have no message, so we phrase one from the event + the tool name, so you can
+ * tell *what* needs you — e.g. an action the auto-mode classifier blocked.
+ */
+function attentionMessage(payload: HookPayload): string {
+  const message = payload.message?.trim();
+  if (message) return message;
+  const tool = payload.tool_name?.trim();
+  if (
+    payload.hook_event_name === "PermissionDenied" ||
+    payload.hook_event_name === "PermissionRequest"
+  ) {
+    return tool ? `Approval needed: ${tool}` : "Approval needed.";
+  }
+  return "Needs your attention.";
+}
+
+/**
+ * Banner for events that mean "Claude needs you" — the Notification event and,
+ * in auto mode, PermissionDenied (the classifier blocked an action you must
+ * decide on). Carries the relevant message plus which project it came from.
+ * Silent on purpose: the flash and any user-configured sound hook already cover
+ * the audible side.
  */
 export function attentionNotification(payload: HookPayload): NotifyOptions {
   return {
     title: titleFor(payload),
-    message: payload.message?.trim() || "Needs your attention.",
+    message: attentionMessage(payload),
     subtitle: subtitleFor(payload),
     sound: "",
   };
