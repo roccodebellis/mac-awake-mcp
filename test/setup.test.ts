@@ -11,9 +11,7 @@ describe("buildHooks", () => {
   });
 
   it("invokes node by absolute path so hooks survive a minimal PATH", () => {
-    const json = JSON.stringify(
-      buildHooks("/opt/mac-awake/index.js", 900, "/abs/node"),
-    );
+    const json = JSON.stringify(buildHooks("/opt/mac-awake/index.js", 900, "/abs/node"));
     // The command must start with the absolute node path, never bare `node `.
     expect(json).toContain('"/abs/node\\" \\"/opt/mac-awake/index.js\\"');
     expect(json).not.toContain('"node ');

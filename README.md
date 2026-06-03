@@ -1,5 +1,10 @@
 # mac-awake-mcp
 
+[![CI](https://github.com/roccodebellis/mac-awake-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/roccodebellis/mac-awake-mcp/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+![Platform: macOS](https://img.shields.io/badge/platform-macOS-lightgrey)
+![Node ≥ 18](https://img.shields.io/badge/node-%E2%89%A518-brightgreen)
+
 A [Model Context Protocol](https://modelcontextprotocol.io) server that lets an AI
 assistant (Claude Code, Claude Desktop, …) **keep your Mac awake while it works** and
 **grab your attention when it needs you** — without installing any third-party app.
@@ -55,7 +60,10 @@ optional hooks block (below).
 
 Tools only fire when the assistant _chooses_ to call them. To make keep-awake **automatic**,
 wire it to Claude Code's session lifecycle with hooks. Merge this into your Claude Code
-`settings.json` (`node dist/index.js setup` prints it with your absolute path filled in):
+`settings.json` — run `node dist/index.js setup` to print it with **absolute paths for both
+`node` and the script** already filled in. (The absolute `node` path matters: Claude Code
+runs hooks under a minimal `PATH` where a bare `node` often isn't found, so the hook would
+fail silently.)
 
 ```json
 {
@@ -92,9 +100,7 @@ wire it to Claude Code's session lifecycle with hooks. Merge this into your Clau
     ],
     "Stop": [
       {
-        "hooks": [
-          { "type": "command", "command": "node /abs/dist/index.js on-stop" }
-        ]
+        "hooks": [{ "type": "command", "command": "node /abs/dist/index.js on-stop" }]
       }
     ]
   }
@@ -106,9 +112,14 @@ Behaviour:
 - **While Claude works** (each prompt / tool call) → keep the Mac awake, refreshed with a
   rolling `--ttl` (default 900s). If Claude goes idle for longer than the TTL, the assertion
   lapses and the Mac can lock again.
-- **When Claude needs you** (`Notification`) → flash the screen, then release keep-awake so
-  the Mac can lock while it waits for you.
+- **When Claude needs you** (`Notification`) → flash the screen and post Claude's own message
+  as a banner, then release keep-awake so the Mac can lock while it waits for you.
 - **When Claude finishes** (`Stop`) → post a "finished" banner, then release.
+
+The Notification and Stop banners are **session-aware**: they read the project from the hook
+payload's `cwd` and put it in the title (e.g. **"Claude · P001"**), so when several Claude
+sessions run at once you can tell which one is calling. Sub-agent notifications add a
+`subagent: …` subtitle, and the Notification banner carries Claude's original message.
 
 ## CLI
 
@@ -149,6 +160,31 @@ screensaver) `presentation` mode keeps the screen alive as expected.
 The first `flash` compiles a tiny Swift/AppKit helper to `~/.cache/mac-awake-mcp/flash`
 (≈ a few seconds, once) and reuses the compiled binary afterwards (milliseconds). If the
 Swift toolchain isn't installed, `flash` falls back to audible beeps.
+
+## Notifications & Apple Watch
+
+Banners are posted with `osascript`, so they show up in macOS Notification Center like any
+other app alert. macOS **does not mirror its own notifications to a paired Apple Watch** — the
+Watch only mirrors _iPhone_ notifications, and that routing is governed by the system, not
+something a script can opt into. So a `notify`/`flash` alert lands on the Mac (with its
+sound), but not on your wrist.
+
+If you want an alert that reaches your phone or Watch, the plan is an **optional** push
+channel (e.g. [ntfy](https://ntfy.sh) or a Telegram bot) that the Notification/Stop hooks can
+fan out to — opt-in and off by default, so the core tool stays network-free. See the roadmap.
+
+## Roadmap
+
+- **Optional push routing** — fan Notification/Stop events out to ntfy / Telegram / Pushover
+  so alerts can reach a phone or Apple Watch, opt-in and off by default.
+- **Presence-aware notifications** — skip the flash when the screen is already unlocked and
+  you're clearly at the keyboard.
+- **Power-source awareness** — different defaults on battery vs. AC power.
+- **Quiet hours** — a scheduled window where keep-awake and flash are suppressed.
+- **Signed helper app** — ship the flash helper as a tiny signed app bundle so banners show a
+  proper icon instead of the generic Script Editor one.
+- **Guarded macOS integration tests** — exercise the real `caffeinate` / `osascript` / Swift
+  path on macOS CI runners (skipped elsewhere).
 
 ## License
 

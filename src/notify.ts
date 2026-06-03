@@ -43,12 +43,7 @@ export async function notify(opts: NotifyOptions): Promise<void> {
 
 /** Absolute path to the bundled Swift flasher source (shipped in assets/). */
 function flashSourcePath(): string {
-  return join(
-    dirname(fileURLToPath(import.meta.url)),
-    "..",
-    "assets",
-    "flash.swift",
-  );
+  return join(dirname(fileURLToPath(import.meta.url)), "..", "assets", "flash.swift");
 }
 
 function flashBinaryPath(): string {
@@ -67,8 +62,7 @@ async function ensureFlashBinary(): Promise<string | null> {
   if (!existsSync(src)) return null;
   const out = flashBinaryPath();
   try {
-    if (existsSync(out) && statSync(out).mtimeMs >= statSync(src).mtimeMs)
-      return out;
+    if (existsSync(out) && statSync(out).mtimeMs >= statSync(src).mtimeMs) return out;
     mkdirSync(dirname(out), { recursive: true });
     await run("swiftc", ["-O", src, "-o", out], 120_000);
     return out;

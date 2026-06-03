@@ -1,11 +1,5 @@
 import { execFileSync, spawn } from "node:child_process";
-import {
-  existsSync,
-  mkdirSync,
-  readFileSync,
-  rmSync,
-  writeFileSync,
-} from "node:fs";
+import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
 import { run } from "./proc.js";
@@ -35,10 +29,7 @@ const INACTIVE: AwakeState = {
   ttlSeconds: null,
 };
 
-const STATE_DIR = join(
-  process.env["XDG_STATE_HOME"] ?? join(homedir(), ".cache"),
-  "mac-awake-mcp",
-);
+const STATE_DIR = join(process.env["XDG_STATE_HOME"] ?? join(homedir(), ".cache"), "mac-awake-mcp");
 const STATE_FILE = join(STATE_DIR, "caffeinate.json");
 
 /** Skip respawning if a matching assertion was refreshed more recently than this. */
@@ -127,8 +118,7 @@ export function startAwake(opts: StartOptions = {}): AwakeState {
 
   const child = spawn("caffeinate", args, { detached: true, stdio: "ignore" });
   child.unref();
-  if (child.pid == null)
-    throw new Error("Failed to launch caffeinate (no PID returned).");
+  if (child.pid == null) throw new Error("Failed to launch caffeinate (no PID returned).");
 
   const state: AwakeState = {
     active: true,
@@ -145,10 +135,7 @@ export function startAwake(opts: StartOptions = {}): AwakeState {
  * Refreshes keep-awake for event-driven callers (hooks). Debounced so a burst
  * of events doesn't churn caffeinate processes.
  */
-export function keepAwakeRefresh(
-  mode: AwakeMode,
-  ttlSeconds: number,
-): AwakeState {
+export function keepAwakeRefresh(mode: AwakeMode, ttlSeconds: number): AwakeState {
   const st = liveState();
   if (st.active && st.mode === mode && st.since != null) {
     const ageMs = Date.now() - Date.parse(st.since);
@@ -187,8 +174,7 @@ export async function status(): Promise<{
       .split("\n")
       .filter((l) => /caffeinate/i.test(l))
       .map((l) => l.trim());
-    assertions =
-      lines.length > 0 ? lines.join("\n") : "(no caffeinate assertion active)";
+    assertions = lines.length > 0 ? lines.join("\n") : "(no caffeinate assertion active)";
   } catch {
     /* keep the fallback message */
   }

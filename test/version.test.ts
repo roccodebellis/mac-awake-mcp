@@ -5,10 +5,7 @@ import { describe, expect, it } from "vitest";
 import { SERVER_VERSION } from "../src/server.js";
 
 const pkg = JSON.parse(
-  readFileSync(
-    join(dirname(fileURLToPath(import.meta.url)), "..", "package.json"),
-    "utf8",
-  ),
+  readFileSync(join(dirname(fileURLToPath(import.meta.url)), "..", "package.json"), "utf8"),
 ) as { version: string };
 
 describe("version", () => {

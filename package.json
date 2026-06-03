@@ -1,7 +1,10 @@
 {
   "name": "@roccodebellis/mac-awake-mcp",
   "version": "0.1.0",
-  "private": true,
+  "private": false,
+  "publishConfig": {
+    "access": "public"
+  },
   "description": "Model Context Protocol (MCP) server that lets AI assistants keep macOS awake while they work and grab your attention when they need you — wraps the native `caffeinate` and `osascript`, no third-party app (works under MDM).",
   "keywords": [
     "mcp",

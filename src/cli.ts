@@ -1,6 +1,7 @@
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import type { AwakeMode } from "./awake.js";
 import { keepAwakeRefresh, liveState, status, stopAwake } from "./awake.js";
+import { attentionNotification, parseHookPayload, stopNotification } from "./hook.js";
 import { flash, notify, warmFlash } from "./notify.js";
 import { createServer, SERVER_NAME, SERVER_VERSION } from "./server.js";
 import { setupText } from "./setup.js";
@@ -17,46 +18,66 @@ Usage: mac-awake-mcp <command> [options]
   notify --message "…" [--title "…"] [--subtitle "…"] [--sound Glass]
                         Post a Notification Center banner.
   flash [--count N]     Flash every display N times (default 3).
-  on-notification       Flash, then release keep-awake (Notification hook).
-  on-stop               Notify "finished", then release (Stop hook).
+  on-notification       Notify (project + message) + flash, then release (Notification hook).
+  on-stop               Notify "finished in <project>", then release (Stop hook).
   setup                 Print MCP + hooks setup instructions.
   help                  Show this help.
 `;
 
-function flagValue(args: readonly string[], name: string): string | undefined {
+export function flagValue(args: readonly string[], name: string): string | undefined {
   const i = args.indexOf(name);
   if (i >= 0 && i + 1 < args.length) return args[i + 1];
   const prefix = `${name}=`;
   return args.find((a) => a.startsWith(prefix))?.slice(prefix.length);
 }
 
-function numberFlag(
-  args: readonly string[],
-  name: string,
-  fallback: number,
-): number {
+export function numberFlag(args: readonly string[], name: string, fallback: number): number {
   const raw = flagValue(args, name);
   const n = raw != null ? Number(raw) : Number.NaN;
   return Number.isFinite(n) ? n : fallback;
 }
 
-function modeFlag(args: readonly string[]): AwakeMode {
+export function modeFlag(args: readonly string[]): AwakeMode {
   return flagValue(args, "--mode") === "compute" ? "compute" : "presentation";
 }
 
 /** Runs a side-effecting subcommand without ever failing the hook that called it. */
-async function safe(
-  label: string,
-  fn: () => Promise<void> | void,
-): Promise<void> {
+async function safe(label: string, fn: () => Promise<void> | void): Promise<void> {
   try {
     await fn();
   } catch (err) {
-    console.error(
-      `${SERVER_NAME} ${label}:`,
-      err instanceof Error ? err.message : err,
-    );
+    console.error(`${SERVER_NAME} ${label}:`, err instanceof Error ? err.message : err);
   }
+}
+
+/**
+ * Reads a hook's JSON payload from stdin. Claude Code pipes the payload and
+ * closes the stream; the timeout is a safety net, and a TTY (manual run) yields
+ * "" immediately so the CLI never blocks waiting for input that won't come.
+ */
+async function readStdin(timeoutMs: number = 1000): Promise<string> {
+  if (process.stdin.isTTY) return "";
+  return new Promise<string>((resolve) => {
+    let data = "";
+    let settled = false;
+    const done = (): void => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      process.stdin.removeAllListeners("data");
+      process.stdin.removeAllListeners("end");
+      process.stdin.removeAllListeners("error");
+      process.stdin.pause();
+      resolve(data);
+    };
+    const timer = setTimeout(done, timeoutMs);
+    process.stdin.setEncoding("utf8");
+    process.stdin.on("data", (chunk: string) => {
+      data += chunk;
+    });
+    process.stdin.on("end", done);
+    process.stdin.on("error", done);
+  });
 }
 
 async function serve(): Promise<void> {
@@ -88,6 +109,8 @@ export async function runCli(argv: readonly string[]): Promise<void> {
 
     case "on-notification":
       return safe("on-notification", async () => {
+        const payload = parseHookPayload(await readStdin());
+        await notify(attentionNotification(payload));
         await flash(3);
         stopAwake();
       });
@@ -96,10 +119,11 @@ export async function runCli(argv: readonly string[]): Promise<void> {
       return safe("on-stop", async () => {
         // Stop fires at the end of every turn; only announce "finished" when we
         // were actually keeping the Mac awake (i.e. a real working turn).
+        const payload = parseHookPayload(await readStdin());
         const wasWorking = liveState().active;
         stopAwake();
         if (wasWorking) {
-          await notify({ message: "Claude has finished.", title: "Claude", sound: "Glass" });
+          await notify(stopNotification(payload));
         }
       });
 
@@ -111,8 +135,7 @@ export async function runCli(argv: readonly string[]): Promise<void> {
     case "notify":
       return safe("notify", async () => {
         await notify({
-          message:
-            flagValue(rest, "--message") ?? "Claude needs your attention.",
+          message: flagValue(rest, "--message") ?? "Claude needs your attention.",
           title: flagValue(rest, "--title"),
           subtitle: flagValue(rest, "--subtitle"),
           sound: flagValue(rest, "--sound"),

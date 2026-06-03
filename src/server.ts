@@ -10,8 +10,7 @@ export const SERVER_NAME = "mac-awake-mcp";
 export const SERVER_VERSION = "0.1.0";
 
 function ok(payload: unknown): CallToolResult {
-  const text =
-    typeof payload === "string" ? payload : JSON.stringify(payload, null, 2);
+  const text = typeof payload === "string" ? payload : JSON.stringify(payload, null, 2);
   return { content: [{ type: "text", text }] };
 }
 
@@ -19,16 +18,12 @@ function fail(text: string): CallToolResult {
   return { content: [{ type: "text", text }], isError: true };
 }
 
-async function guard(
-  body: () => Promise<CallToolResult>,
-): Promise<CallToolResult> {
+async function guard(body: () => Promise<CallToolResult>): Promise<CallToolResult> {
   try {
     return await body();
   } catch (err) {
     if (err instanceof CommandError) return fail(err.message);
-    return fail(
-      `Unexpected error: ${err instanceof Error ? err.message : String(err)}`,
-    );
+    return fail(`Unexpected error: ${err instanceof Error ? err.message : String(err)}`);
   }
 }
 
@@ -58,9 +53,7 @@ export function createServer(): McpServer {
           .number()
           .positive()
           .optional()
-          .describe(
-            "Optional safety cap: auto-release after this many minutes. Omit for no cap.",
-          ),
+          .describe("Optional safety cap: auto-release after this many minutes. Omit for no cap."),
       },
       annotations: { readOnlyHint: false, openWorldHint: true },
     },
@@ -68,8 +61,7 @@ export function createServer(): McpServer {
       guard(async () => {
         const state = startAwake({
           mode,
-          ttlSeconds:
-            durationMinutes != null ? Math.round(durationMinutes * 60) : null,
+          ttlSeconds: durationMinutes != null ? Math.round(durationMinutes * 60) : null,
           watchPid: process.pid,
         });
         return ok({
@@ -135,9 +127,7 @@ export function createServer(): McpServer {
         sound: z
           .string()
           .optional()
-          .describe(
-            "macOS sound name (e.g. 'Glass', 'Ping'). Omit or '' for silent.",
-          ),
+          .describe("macOS sound name (e.g. 'Glass', 'Ping'). Omit or '' for silent."),
       },
       annotations: { readOnlyHint: false, openWorldHint: true },
     },

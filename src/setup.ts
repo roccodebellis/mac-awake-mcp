@@ -50,11 +50,7 @@ const DEFAULT_TTL_SECONDS = 900;
 export function setupText(): string {
   const bin = binPath();
   const node = process.execPath;
-  const hooksJson = JSON.stringify(
-    buildHooks(bin, DEFAULT_TTL_SECONDS, node),
-    null,
-    2,
-  );
+  const hooksJson = JSON.stringify(buildHooks(bin, DEFAULT_TTL_SECONDS, node), null, 2);
   return `mac-awake-mcp — setup
 
 1) Register the MCP server with Claude Code (exposes stay_awake / let_sleep /

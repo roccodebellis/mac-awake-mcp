@@ -62,11 +62,7 @@ export async function run(
       );
     }
     if (e.killed === true || e.signal === "SIGTERM") {
-      throw new CommandError(
-        `\`${file}\` timed out after ${timeoutMs}ms.`,
-        stderr,
-        "TIMEOUT",
-      );
+      throw new CommandError(`\`${file}\` timed out after ${timeoutMs}ms.`, stderr, "TIMEOUT");
     }
     throw new CommandError(
       `\`${file}\` failed: ${stderr.trim() || e.message}`,
