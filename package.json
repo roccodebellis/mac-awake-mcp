@@ -42,15 +42,13 @@
   "files": [
     "dist",
     "assets",
+    "scripts/postinstall.mjs",
     "README.md",
     "LICENSE"
   ],
   "engines": {
     "node": ">=18.0.0"
   },
-  "os": [
-    "darwin"
-  ],
   "scripts": {
     "build": "tsc && chmod +x dist/index.js",
     "dev": "tsc --watch",
@@ -62,6 +60,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "checksums": "bash scripts/checksums.sh",
+    "postinstall": "node scripts/postinstall.mjs",
     "prepare": "npm run build",
     "prepublishOnly": "npm run typecheck && npm run test"
   },

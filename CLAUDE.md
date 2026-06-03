@@ -8,7 +8,8 @@ first.
 An MCP (Model Context Protocol) server **and** CLI that keeps macOS awake while
 an AI assistant works and grabs the user's attention when it needs them — using
 only native macOS binaries (`caffeinate`, `osascript`, optional `swiftc`), so it
-works on MDM-managed Macs. macOS-only (`"os": ["darwin"]`). See the
+works on MDM-managed Macs. macOS-only, enforced at runtime by a postinstall
+notice (not npm's `os` field, which would break cross-platform installs). See the
 [README](README.md) for user docs and [docs/adr](docs/adr) for why things are
 the way they are.
 

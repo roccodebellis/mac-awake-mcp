@@ -1,6 +1,8 @@
 # mac-awake-mcp
 
 [![CI](https://github.com/roccodebellis/mac-awake-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/roccodebellis/mac-awake-mcp/actions/workflows/ci.yml)
+[![npm](https://img.shields.io/npm/v/@roccodebellis/mac-awake-mcp)](https://www.npmjs.com/package/@roccodebellis/mac-awake-mcp)
+[![npm downloads](https://img.shields.io/npm/dm/@roccodebellis/mac-awake-mcp)](https://www.npmjs.com/package/@roccodebellis/mac-awake-mcp)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 ![Platform: macOS](https://img.shields.io/badge/platform-macOS-lightgrey)
 ![Node ≥ 18](https://img.shields.io/badge/node-%E2%89%A518-brightgreen)
@@ -28,6 +30,24 @@ apps like Caffeine or Amphetamine are blocked. `caffeinate` is part of the OS, n
 
 ## Install
 
+Run it straight from npm — no clone, no build:
+
+```sh
+npx -y @roccodebellis/mac-awake-mcp serve
+```
+
+Or install the `mac-awake-mcp` command globally:
+
+```sh
+npm install -g @roccodebellis/mac-awake-mcp
+```
+
+The package is macOS-only at runtime but installs everywhere without errors (a
+postinstall notice flags non-macOS); it ships prebuilt, so no compiler is needed.
+
+<details>
+<summary>From source (for development)</summary>
+
 ```sh
 git clone https://github.com/roccodebellis/mac-awake-mcp.git
 cd mac-awake-mcp
@@ -35,16 +55,19 @@ npm install
 npm run build
 ```
 
-(Once published: `npx -y @roccodebellis/mac-awake-mcp`.)
+</details>
 
 ## Register with Claude Code
 
 ```sh
-claude mcp add mac-awake -- node /absolute/path/to/mac-awake-mcp/dist/index.js serve
+claude mcp add mac-awake -- npx -y @roccodebellis/mac-awake-mcp serve
 ```
 
-Run `node dist/index.js setup` to print the exact command for your install plus the
-optional hooks block (below).
+From a local build, point Claude at the absolute path instead:
+`claude mcp add mac-awake -- node /absolute/path/to/mac-awake-mcp/dist/index.js serve`.
+
+Run `mac-awake-mcp setup` (or `node dist/index.js setup`) to print the exact command
+for your install plus the optional hooks block (below).
 
 For a step-by-step walkthrough (registration, automatic mode, troubleshooting, uninstall),
 see the [**user guide**](docs/usage.md).
