@@ -63,3 +63,6 @@ CI (`.github/workflows/ci.yml`) runs on `macos-latest`: format, typecheck, test
 - Tests mock the macOS process layer so the suite is cross-platform and
   deterministic; add or update tests with any behaviour change.
 - Record significant decisions as a new ADR in `docs/adr/`.
+- The engineering standards behind this repo — testing, CI, distribution, git
+  hygiene, governance — are distilled into a reusable
+  [shipping playbook](docs/SHIPPING-PLAYBOOK.md).
