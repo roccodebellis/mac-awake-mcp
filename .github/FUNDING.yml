@@ -1,0 +1,7 @@
+# Controls the "Sponsor" button GitHub shows on this repository.
+# GitHub Sponsors is free for both the sponsor and the maintainer.
+github: [roccodebellis]
+# Other platforms — uncomment and fill in if you enable them:
+# ko-fi: your-handle
+# buy_me_a_coffee: your-handle
+# custom: ["https://www.paypal.me/your-handle"]
