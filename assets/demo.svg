@@ -1,0 +1,156 @@
+<svg viewBox="0 0 960 540" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="t d">
+  <title id="t">mac-awake-mcp demo</title>
+  <desc id="d">
+    Stylized animation of the real flow: Claude Code works in a terminal while a
+    keep-awake chip shows caffeinate holding the display awake; when approval is
+    needed the screen flashes and a session-aware notification banner appears;
+    when the run finishes a second banner shows and the assertion is released so
+    the Mac can sleep again.
+  </desc>
+  <style>
+    /* 12s loop. Timings as % of 12s: 1s≈8.33% */
+    .sans { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    .mono { font-family: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace; }
+
+    .line, .chip, .chip2, .note1, .note2 { opacity: 0; }
+    .line  { animation: appear 12s linear infinite; }
+    .chip  { animation: appear 12s linear infinite; animation-delay: 0s; }
+
+    /* terminal lines: staggered via per-class delays baked into keyframe copies */
+    .l1 { animation-name: show-l1; } .l2 { animation-name: show-l2; }
+    .l3 { animation-name: show-l3; } .l4 { animation-name: show-l4; }
+    .l5 { animation-name: show-l5; }
+    .l1,.l2,.l3,.l4,.l5 { animation-duration: 12s; animation-timing-function: steps(1,end); animation-iteration-count: infinite; }
+    @keyframes show-l1 { 4%  { opacity: 1; } 97% { opacity: 1; } 98%,100% { opacity: 0; } }
+    @keyframes show-l2 { 12% { opacity: 1; } 97% { opacity: 1; } 98%,100% { opacity: 0; } }
+    @keyframes show-l3 { 20% { opacity: 1; } 97% { opacity: 1; } 98%,100% { opacity: 0; } }
+    @keyframes show-l4 { 28% { opacity: 1; } 97% { opacity: 1; } 98%,100% { opacity: 0; } }
+    @keyframes show-l5 { 38% { opacity: 1; } 97% { opacity: 1; } 98%,100% { opacity: 0; } }
+
+    @keyframes appear { 8% { opacity: 0; } 10% { opacity: 1; } 68% { opacity: 1; } 70% { opacity: 0; } 100% { opacity: 0; } }
+
+    /* caret blink on the last terminal line */
+    .caret { animation: blink 1s steps(1,end) infinite; }
+    @keyframes blink { 50% { opacity: 0; } }
+
+    /* notification 1: slides in at ~5s, out at ~8s */
+    .note1 { animation: note1 12s ease-out infinite; }
+    @keyframes note1 {
+      0%, 41%   { opacity: 0; transform: translateX(40px); }
+      44%, 63%  { opacity: 1; transform: translateX(0); }
+      66%, 100% { opacity: 0; transform: translateX(40px); }
+    }
+    /* notification 2 (finished): in at ~8.6s */
+    .note2 { animation: note2 12s ease-out infinite; }
+    @keyframes note2 {
+      0%, 71%   { opacity: 0; transform: translateX(40px); }
+      74%, 95%  { opacity: 1; transform: translateX(0); }
+      98%, 100% { opacity: 0; transform: translateX(40px); }
+    }
+    /* released chip replaces keep-awake chip at ~8.6s */
+    .chip2 { animation: chip2 12s steps(1,end) infinite; }
+    @keyframes chip2 { 0%,73% { opacity: 0; } 74%,96% { opacity: 1; } 97%,100% { opacity: 0; } }
+    .chip  { animation-name: chip1; animation-timing-function: steps(1,end); }
+    @keyframes chip1 { 0%,7% { opacity: 0; } 8%,72% { opacity: 1; } 73%,100% { opacity: 0; } }
+
+    /* full-screen flash: two pulses ~5.3–6.6s */
+    .flash { opacity: 0; animation: flash 12s linear infinite; }
+    @keyframes flash {
+      0%, 44%  { opacity: 0; }
+      45.5%    { opacity: 0.85; }
+      47%      { opacity: 0; }
+      49.5%    { opacity: 0.85; }
+      51%,100% { opacity: 0; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      /* freeze on a readable composite frame */
+      .line, .chip, .note1 { animation: none; opacity: 1; }
+      .chip2, .note2, .flash { animation: none; opacity: 0; }
+      .caret { animation: none; }
+    }
+  </style>
+
+  <!-- desktop -->
+  <rect width="960" height="540" rx="14" fill="#0b0f17"/>
+  <rect width="960" height="540" rx="14" fill="url(#glow)"/>
+  <defs>
+    <radialGradient id="glow" cx="70%" cy="-10%" r="90%">
+      <stop offset="0%" stop-color="#1b2740"/>
+      <stop offset="60%" stop-color="#0b0f17" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- menu bar -->
+  <rect x="0" y="0" width="960" height="26" rx="14" fill="#121826"/>
+  <rect x="0" y="13" width="960" height="13" fill="#121826"/>
+  <text x="18" y="18" class="sans" font-size="12" fill="#9fb0c8">⌘</text>
+  <text x="942" y="18" class="sans" font-size="11" fill="#9fb0c8" text-anchor="end">Tue 14:32</text>
+
+  <!-- terminal window -->
+  <g>
+    <rect x="48" y="64" width="540" height="404" rx="12" fill="#10182a" stroke="#243049"/>
+    <rect x="48" y="64" width="540" height="34" rx="12" fill="#161d2e"/>
+    <rect x="48" y="86" width="540" height="12" fill="#161d2e"/>
+    <circle cx="70" cy="81" r="5.5" fill="#ff5f57"/>
+    <circle cx="88" cy="81" r="5.5" fill="#febc2e"/>
+    <circle cx="106" cy="81" r="5.5" fill="#28c840"/>
+    <text x="318" y="85" class="sans" font-size="12" fill="#9fb0c8" text-anchor="middle">claude — mdrive-web</text>
+
+    <g class="mono" font-size="14" fill="#d7e3ff">
+      <text x="72" y="132" class="line l1"><tspan fill="#7af0c0">$</tspan> claude "ship the booking form"</text>
+      <text x="72" y="166" class="line l2"><tspan fill="#5e9bff">▸</tspan> Refactoring <tspan fill="#7af0c0">booking-form.tsx</tspan>…</text>
+      <text x="72" y="200" class="line l3"><tspan fill="#5e9bff">▸</tspan> Running tests… <tspan fill="#7af0c0">42 passed</tspan></text>
+      <text x="72" y="234" class="line l4"><tspan fill="#5e9bff">▸</tspan> Building… done in 8.2s</text>
+      <text x="72" y="268" class="line l5"><tspan fill="#febc2e">▸</tspan> Waiting for approval: <tspan fill="#febc2e">Bash(npm publish)</tspan><tspan class="caret" fill="#d7e3ff"> ▍</tspan></text>
+    </g>
+  </g>
+
+  <!-- keep-awake chip -->
+  <g class="chip">
+    <rect x="632" y="76" width="280" height="66" rx="12" fill="#12203a" stroke="#2b4a7a"/>
+    <text x="652" y="104" class="sans" font-size="15" fill="#e7ecf3">☕ keep-awake · <tspan fill="#7af0c0">presentation</tspan></text>
+    <text x="652" y="128" class="mono" font-size="12" fill="#9fb0c8">caffeinate -d -i · TTL 900s</text>
+  </g>
+
+  <!-- released chip (same spot, later) -->
+  <g class="chip2">
+    <rect x="632" y="76" width="280" height="66" rx="12" fill="#14261c" stroke="#2f6a4a"/>
+    <text x="652" y="104" class="sans" font-size="15" fill="#e7ecf3">🔓 assertion released</text>
+    <text x="652" y="128" class="mono" font-size="12" fill="#9fb0c8">the Mac can sleep again</text>
+  </g>
+
+  <!-- notification 1: attention -->
+  <g class="note1">
+    <rect x="612" y="170" width="320" height="76" rx="14" fill="#1c2438" stroke="#33415e"/>
+    <rect x="628" y="186" width="44" height="44" rx="10" fill="#5e9bff"/>
+    <text x="650" y="216" class="sans" font-size="22" text-anchor="middle">⚡</text>
+    <text x="686" y="203" class="sans" font-size="14" font-weight="700" fill="#e7ecf3">Claude · P001</text>
+    <text x="686" y="226" class="sans" font-size="13" fill="#9fb0c8">Approval needed: Bash</text>
+  </g>
+
+  <!-- notification 2: finished -->
+  <g class="note2">
+    <rect x="612" y="170" width="320" height="76" rx="14" fill="#1c2438" stroke="#33415e"/>
+    <rect x="628" y="186" width="44" height="44" rx="10" fill="#28c840"/>
+    <text x="650" y="216" class="sans" font-size="22" text-anchor="middle">✅</text>
+    <text x="686" y="203" class="sans" font-size="14" font-weight="700" fill="#e7ecf3">Claude · P001</text>
+    <text x="686" y="226" class="sans" font-size="13" fill="#9fb0c8">Finished — 3m 42s</text>
+  </g>
+
+  <!-- caption strip -->
+  <g class="sans">
+    <text x="632" y="300" font-size="13" fill="#9fb0c8">While Claude works, <tspan fill="#7af0c0">caffeinate</tspan> keeps the display</text>
+    <text x="632" y="322" font-size="13" fill="#9fb0c8">awake — same assertion as a Keynote slideshow.</text>
+    <text x="632" y="356" font-size="13" fill="#9fb0c8">Needs you? The screen <tspan fill="#e7ecf3">flashes</tspan> and a session-aware</text>
+    <text x="632" y="378" font-size="13" fill="#9fb0c8">banner names the project calling.</text>
+    <text x="632" y="412" font-size="13" fill="#9fb0c8">Done or idle past the TTL? Released — your Mac</text>
+    <text x="632" y="434" font-size="13" fill="#9fb0c8">locks like normal. Never awake forever.</text>
+  </g>
+
+  <!-- footer -->
+  <text x="480" y="512" class="mono" font-size="13" fill="#5e9bff" text-anchor="middle">npx -y @roccodebellis/mac-awake-mcp serve</text>
+
+  <!-- full-screen flash overlay (kept last = on top) -->
+  <rect class="flash" width="960" height="540" rx="14" fill="#ffffff"/>
+</svg>
