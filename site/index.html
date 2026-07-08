@@ -1,0 +1,409 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>mac-awake-mcp — keep your Mac awake while AI works</title>
+    <meta
+      name="description"
+      content="An MCP server that keeps your Mac awake while an AI assistant works and grabs your attention when it needs you. Native caffeinate/osascript, MDM-friendly, no third-party app."
+    />
+    <link rel="canonical" href="https://roccodebellis.github.io/mac-awake-mcp/" />
+    <!-- Open Graph / social -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="mac-awake-mcp" />
+    <meta
+      property="og:description"
+      content="Keep your Mac awake while an AI assistant works — and get pinged when it needs you. Native macOS tooling, MDM-friendly, no third-party app."
+    />
+    <meta property="og:url" content="https://roccodebellis.github.io/mac-awake-mcp/" />
+    <meta name="twitter:card" content="summary" />
+    <style>
+      :root {
+        --bg: #0b0f17;
+        --bg-soft: #121826;
+        --panel: #161d2e;
+        --border: #243049;
+        --text: #e7ecf3;
+        --muted: #9fb0c8;
+        --accent: #5e9bff;
+        --accent-2: #7af0c0;
+        --radius: 14px;
+        --maxw: 980px;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html {
+        scroll-behavior: smooth;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        html {
+          scroll-behavior: auto;
+        }
+      }
+      body {
+        margin: 0;
+        background:
+          radial-gradient(1200px 600px at 70% -10%, #1b2740 0%, transparent 60%), var(--bg);
+        color: var(--text);
+        font:
+          16px/1.65 -apple-system,
+          BlinkMacSystemFont,
+          "Segoe UI",
+          Roboto,
+          Helvetica,
+          Arial,
+          sans-serif;
+        -webkit-font-smoothing: antialiased;
+      }
+      a {
+        color: var(--accent);
+      }
+      .wrap {
+        max-width: var(--maxw);
+        margin: 0 auto;
+        padding: 0 20px;
+      }
+      .skip {
+        position: absolute;
+        left: -9999px;
+      }
+      .skip:focus {
+        left: 12px;
+        top: 12px;
+        background: var(--accent);
+        color: #04101f;
+        padding: 8px 12px;
+        border-radius: 8px;
+        z-index: 10;
+      }
+
+      /* Hero */
+      header.hero {
+        padding: 86px 0 56px;
+        text-align: center;
+      }
+      .badge {
+        display: inline-flex;
+        gap: 8px;
+        align-items: center;
+        font-size: 13px;
+        color: var(--accent-2);
+        border: 1px solid var(--border);
+        background: var(--bg-soft);
+        padding: 6px 12px;
+        border-radius: 999px;
+      }
+      h1 {
+        font-size: clamp(2.1rem, 6vw, 3.4rem);
+        line-height: 1.08;
+        margin: 22px 0 10px;
+        letter-spacing: -0.02em;
+      }
+      h1 .grad {
+        background: linear-gradient(90deg, var(--accent), var(--accent-2));
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+      }
+      .lede {
+        font-size: clamp(1.05rem, 2.4vw, 1.3rem);
+        color: var(--muted);
+        max-width: 680px;
+        margin: 0 auto 28px;
+      }
+      .cta {
+        display: flex;
+        gap: 12px;
+        justify-content: center;
+        flex-wrap: wrap;
+      }
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 20px;
+        border-radius: 10px;
+        text-decoration: none;
+        font-weight: 600;
+        border: 1px solid var(--border);
+      }
+      .btn.primary {
+        background: var(--accent);
+        color: #04101f;
+        border-color: transparent;
+      }
+      .btn.ghost {
+        background: var(--bg-soft);
+        color: var(--text);
+      }
+      .btn:focus-visible,
+      a:focus-visible,
+      button:focus-visible {
+        outline: 3px solid var(--accent-2);
+        outline-offset: 2px;
+      }
+
+      /* Install */
+      .install {
+        margin: 30px auto 0;
+        max-width: 720px;
+      }
+      .code {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        background: #0a1020;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 14px 16px;
+        text-align: left;
+      }
+      .code code {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-size: 14.5px;
+        color: #d7e3ff;
+        overflow-x: auto;
+        white-space: nowrap;
+      }
+      .code code .tok {
+        color: var(--accent-2);
+      }
+      .copy {
+        flex: none;
+        cursor: pointer;
+        background: var(--panel);
+        border: 1px solid var(--border);
+        color: var(--muted);
+        border-radius: 8px;
+        padding: 7px 10px;
+        font-size: 13px;
+      }
+      .copy:hover {
+        color: var(--text);
+      }
+      .hint {
+        color: var(--muted);
+        font-size: 13.5px;
+        margin: 10px 2px 0;
+        text-align: left;
+      }
+
+      section {
+        padding: 46px 0;
+        border-top: 1px solid var(--border);
+      }
+      h2 {
+        font-size: 1.5rem;
+        margin: 0 0 22px;
+        letter-spacing: -0.01em;
+      }
+      .grid {
+        display: grid;
+        gap: 14px;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      }
+      .card {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 18px;
+      }
+      .card h3 {
+        margin: 0 0 6px;
+        font-size: 1.02rem;
+      }
+      .card h3 code {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        color: var(--accent-2);
+        font-size: 0.95em;
+      }
+      .card p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 14.5px;
+      }
+
+      /* Demo placeholder */
+      .demo {
+        border: 1px dashed var(--border);
+        border-radius: var(--radius);
+        background: var(--bg-soft);
+        aspect-ratio: 16 / 9;
+        display: grid;
+        place-items: center;
+        color: var(--muted);
+        text-align: center;
+        padding: 20px;
+      }
+
+      footer {
+        padding: 40px 0 64px;
+        border-top: 1px solid var(--border);
+        color: var(--muted);
+        font-size: 14px;
+      }
+      footer .links {
+        display: flex;
+        gap: 18px;
+        flex-wrap: wrap;
+        margin-bottom: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <a class="skip" href="#install">Skip to install</a>
+    <div class="wrap">
+      <header class="hero">
+        <span class="badge">● Native macOS · MDM-friendly · MIT</span>
+        <h1>Keep your Mac awake<br /><span class="grad">while AI does the work</span></h1>
+        <p class="lede">
+          An <a href="https://modelcontextprotocol.io">MCP</a> server + CLI that stops your Mac
+          locking mid-task while an AI assistant runs — then flashes the screen and pings you the
+          moment it needs you. It wraps the <code>caffeinate</code> and <code>osascript</code>
+          binaries that ship with macOS, so it works even on locked-down, MDM-managed Macs where
+          apps like Caffeine or Amphetamine are blocked.
+        </p>
+        <div class="cta">
+          <a class="btn primary" href="https://github.com/roccodebellis/mac-awake-mcp"
+            >View on GitHub</a
+          >
+          <a class="btn ghost" href="https://www.npmjs.com/package/@roccodebellis/mac-awake-mcp"
+            >npm package</a
+          >
+        </div>
+
+        <div class="install" id="install">
+          <div class="code">
+            <code id="install-cmd"
+              ><span class="tok">npx</span> -y @roccodebellis/mac-awake-mcp serve</code
+            >
+            <button
+              class="copy"
+              type="button"
+              data-copy="install-cmd"
+              aria-label="Copy install command"
+            >
+              Copy
+            </button>
+          </div>
+          <p class="hint">
+            Register it with Claude Code:
+            <code>claude mcp add mac-awake -- npx -y @roccodebellis/mac-awake-mcp serve</code>
+          </p>
+        </div>
+      </header>
+
+      <main>
+        <section id="demo" aria-label="Demo">
+          <h2>See it work</h2>
+          <img
+            src="demo.svg"
+            alt="Animated walkthrough: Claude Code works in a terminal while a keep-awake chip shows caffeinate holding the display; when approval is needed the screen flashes and a session-aware banner titled 'Claude · P001' appears; when the run finishes the assertion is released so the Mac can sleep."
+            style="width: 100%; border-radius: 14px; border: 1px solid var(--border)"
+          />
+          <p class="hint">
+            Stylized animation of the real flow — a real screen capture is on its way.
+          </p>
+        </section>
+
+        <section id="tools">
+          <h2>Five tools the assistant can call</h2>
+          <div class="grid">
+            <div class="card">
+              <h3><code>stay_awake</code></h3>
+              <p>
+                Keep the Mac awake. <em>presentation</em> mode holds the display on and blocks the
+                lock; <em>compute</em> mode keeps only the system awake for background jobs.
+              </p>
+            </div>
+            <div class="card">
+              <h3><code>let_sleep</code></h3>
+              <p>Release the assertion so the Mac can sleep and lock normally again.</p>
+            </div>
+            <div class="card">
+              <h3><code>awake_status</code></h3>
+              <p>
+                Report whether keep-awake is active (mode, PID, TTL) plus the live pmset assertions.
+              </p>
+            </div>
+            <div class="card">
+              <h3><code>notify</code></h3>
+              <p>Post a Notification Center banner with a message, title, subtitle, and sound.</p>
+            </div>
+            <div class="card">
+              <h3><code>flash</code></h3>
+              <p>Flash every display a few times as a hard-to-miss visual alert.</p>
+            </div>
+          </div>
+        </section>
+
+        <section id="features">
+          <h2>Why it's different</h2>
+          <div class="grid">
+            <div class="card">
+              <h3>Works under MDM</h3>
+              <p>
+                <code>caffeinate</code> is part of the OS, not a third-party app — it creates the
+                same power assertion Keynote uses in presentation mode.
+              </p>
+            </div>
+            <div class="card">
+              <h3>Fully automatic</h3>
+              <p>
+                Claude Code hooks keep the Mac awake while the agent works, flash when it needs you,
+                and release the assertion when it goes idle or finishes.
+              </p>
+            </div>
+            <div class="card">
+              <h3>Session-aware alerts</h3>
+              <p>
+                Banners name the project (e.g. <em>"Claude · P001"</em>) so you can tell which of
+                several running sessions is calling.
+              </p>
+            </div>
+            <div class="card">
+              <h3>Network-free &amp; safe</h3>
+              <p>
+                No network calls; every subprocess runs without a shell. Keep-awake always has a
+                release path, so it never silently runs forever.
+              </p>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <footer>
+        <div class="links">
+          <a href="https://github.com/roccodebellis/mac-awake-mcp">GitHub</a>
+          <a href="https://www.npmjs.com/package/@roccodebellis/mac-awake-mcp">npm</a>
+          <a href="https://github.com/roccodebellis/mac-awake-mcp/blob/main/docs/usage.md"
+            >User guide</a
+          >
+          <a href="https://github.com/sponsors/roccodebellis">Sponsor</a>
+        </div>
+        Free and MIT-licensed · © Rocco Debellis · Not affiliated with Anthropic or Apple.
+      </footer>
+    </div>
+
+    <script>
+      // Progressive enhancement: copy-to-clipboard for the install command.
+      document.querySelectorAll(".copy").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          const el = document.getElementById(btn.dataset.copy);
+          if (!el) return;
+          try {
+            await navigator.clipboard.writeText(el.textContent.trim());
+            const prev = btn.textContent;
+            btn.textContent = "Copied";
+            setTimeout(() => (btn.textContent = prev), 1400);
+          } catch {
+            /* clipboard blocked — the text is selectable anyway */
+          }
+        });
+      });
+    </script>
+  </body>
+</html>
