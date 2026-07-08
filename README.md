@@ -19,6 +19,15 @@ It wraps two binaries that ship with macOS:
 Because it uses only native tooling, **it works on MDM-managed (enterprise) Macs** where
 apps like Caffeine or Amphetamine are blocked. `caffeinate` is part of the OS, not an app.
 
+## See it in action
+
+<p align="center">
+  <img src="assets/demo.svg" width="840" alt="Animated walkthrough: Claude Code works in a terminal while a keep-awake chip shows caffeinate holding the display; when approval is needed the screen flashes and a session-aware banner titled 'Claude · P001' appears; when the run finishes a second banner shows and the assertion is released so the Mac can sleep." />
+</p>
+
+<sub>Stylized animation of the real flow (not a screen capture) — the banners, flash, and
+keep-awake/release lifecycle are exactly what the hooks do.</sub>
+
 ## Requirements
 
 - macOS
